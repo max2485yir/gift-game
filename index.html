@@ -4,153 +4,204 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>بازی حدس گیفت تیک‌تاک</title>
+
 <style>
 *{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Arial,sans-serif;
+  padding:18px 10px;
   text-align:center;
-  background:linear-gradient(135deg,#17152e,#33204c);
+  font-family:Arial,sans-serif;
   color:white;
-  padding:20px 12px;
+  background:linear-gradient(135deg,#17152e,#33204c);
 }
-h1{font-size:25px;color:#ffdf55}
-p{color:#eee}
+h1{color:#ffdf55;font-size:24px}
 #board{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:10px;
+  gap:8px;
   max-width:520px;
-  margin:22px auto;
+  margin:20px auto;
 }
 .card{
-  min-height:120px;
+  min-height:115px;
   border:2px solid #ffdf55;
   border-radius:14px;
   background:#49356c;
   color:white;
-  padding:8px 3px;
-  cursor:pointer;
+  padding:7px 3px;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:5px;
+  gap:6px;
   overflow:hidden;
 }
-.card:disabled{cursor:default}
+.card:disabled{opacity:1}
 .number{font-size:28px;font-weight:bold}
-.gift-img{
-  width:62px;
-  height:62px;
-  object-fit:contain;
-}
-.gift-name{font-size:13px;font-weight:bold}
+.gift-img{width:62px;height:62px;object-fit:contain}
+.gift-name{font-size:12px;font-weight:bold}
 .price{font-size:12px;color:#ffe56d}
-button#restart{
+#message{min-height:28px;color:#ffe56d}
+#restart{
   background:#ffdf55;
   color:#241638;
   border:0;
-  padding:13px 25px;
+  padding:13px 24px;
   border-radius:12px;
   font-size:17px;
   font-weight:bold;
-  cursor:pointer;
 }
-#message{min-height:28px;color:#ffe56d}
 @media(max-width:360px){
-  #board{gap:6px}
-  .card{min-height:105px}
+  #board{gap:5px}
   .gift-img{width:48px;height:48px}
+  .card{min-height:100px}
 }
 </style>
 </head>
-<body>
 
+<body>
 <h1>🎁 بازی حدس گیفت تیک‌تاک 🎁</h1>
-<p>یک شماره انتخاب کن و ببین چه گیفتی پشت آن پنهان شده!</p>
-<p>۲۰ شماره، ۲۰ گیفت معروف</p>
+<p>یک شماره انتخاب کن و گیفت پنهان‌شده را پیدا کن!</p>
+<p>۲۰ شماره، از گیفت‌های کوچک تا گیفت‌های بزرگ</p>
 
 <div id="board"></div>
-<div id="message">روی یکی از شماره‌ها بزن!</div>
+<div id="message">در حال آماده‌کردن گیفت‌ها...</div>
 <button id="restart" onclick="startGame()">🔄 شروع دوباره</button>
 
 <script>
-const gifts = [
-  {name:"Rose",price:1,image:"rose.webp"},
-  {name:"Finger Heart",price:5,image:"finger_heart.webp"},
-  {name:"Ice Cream",price:10,image:"ice_cream.webp"},
-  {name:"Perfume",price:20,image:"perfume.webp"},
-  {name:"Love You",price:49,image:"love_you.webp"},
-  {name:"Teddy Bear",price:100,image:"teddy_bear.webp"},
-  {name:"Mic",price:100,image:"mic.webp"},
-  {name:"Hand Hearts",price:100,image:"hand_hearts.webp"},
-  {name:"Sunglasses",price:199,image:"sunglasses.webp"},
-  {name:"Bouquet",price:199,image:"bouquet.webp"},
-  {name:"Galaxy",price:1000,image:"galaxy.webp"},
-  {name:"Fireworks",price:1088,image:"fireworks.webp"},
-  {name:"Whale",price:2150,image:"whale.webp"},
-  {name:"Private Jet",price:4888,image:"private_jet.webp"},
-  {name:"Sports Car",price:7000,image:"sports_car.webp"},
-  {name:"Castle",price:20000,image:"castle.webp"},
-  {name:"Lion",price:29999,image:"lion.webp"},
-  {name:"Dragon",price:planPrice("dragon"),image:"dragon.webp"},
-  {name:"Tiger",price:39999,image:"tiger.webp"},
-  {name:"TikTok Universe",price:44999,image:"tiktok_universe.webp"}
+const gifts=[
+ {name:"Rose",price:1},
+ {name:"Finger Heart",price:5},
+ {name:"Ice Cream Cone",price:1},
+ {name:"Perfume",price:20},
+ {name:"Love You",price:49},
+ {name:"Teddy Bear",price:100},
+ {name:"Mic",price:100},
+ {name:"Hand Hearts",price:100},
+ {name:"Sunglasses",price:199},
+ {name:"Bouquet",price:500},
+ {name:"Galaxy",price:1000},
+ {name:"Fireworks",price:1088},
+ {name:"Whale Diving",price:2150},
+ {name:"Private Jet",price:4888},
+ {name:"Sports Car",price:7000},
+ {name:"Castle",price:20000},
+ {name:"Lion",price:29999},
+ {name:"Dragon",price:39999},
+ {name:"Tiger",price:19999},
+ {name:"TikTok Universe",price:44999}
 ];
 
-function planPrice(name){
-  return 39999;
+const dataURL=
+"https://raw.githubusercontent.com/antiops/tiktok-trending-data/main/live-gift-details.json";
+
+let imageMap={};
+
+async function loadImages(){
+ try{
+  const response=await fetch(dataURL);
+  if(!response.ok) throw new Error("Images unavailable");
+  const data=await response.json();
+
+  data.forEach(item=>{
+   if(item.name && item.image && item.image.url_list){
+    imageMap[item.name.toLowerCase().trim()]=
+      item.image.url_list[0];
+   }
+  });
+
+  document.getElementById("message").textContent=
+    "گیفت‌ها آماده‌اند؛ یک شماره انتخاب کن!";
+ }catch(error){
+  document.getElementById("message").textContent=
+    "عکس‌ها بارگذاری نشدند؛ اینترنت را بررسی کن.";
+ }
 }
 
-const imageBase = "https://beetgames.com/images/gifts/";
+function findImage(name){
+ const key=name.toLowerCase().trim();
+
+ if(imageMap[key]) return imageMap[key];
+
+ const aliases={
+  "love you":["love you so much","love you"],
+  "teddy bear":["teddy bear"],
+  "hand hearts":["hand hearts","hand heart"],
+  "sunglasses":["sunglasses","2025 glasses"],
+  "bouquet":["bouquet"],
+  "fireworks":["fireworks","fireworks show"],
+  "private jet":["private jet"],
+  "sports car":["sports car"],
+  "castle":["castle"],
+  "dragon":["dragon"],
+  "tiger":["tiger"],
+  "galaxy":["galaxy"],
+  "whale diving":["whale diving","whale"],
+  "mic":["gimme the mic","take the mic","mic"]
+ };
+
+ const options=aliases[key]||[key];
+
+ for(const option of options){
+  if(imageMap[option]) return imageMap[option];
+ }
+
+ const match=Object.keys(imageMap).find(k=>
+  k===key || k.startsWith(key+" ")
+ );
+
+ return match ? imageMap[match] : "";
+}
 
 function startGame(){
-  const board = document.getElementById("board");
-  board.innerHTML = "";
-  document.getElementById("message").textContent =
-    "روی یکی از شماره‌ها بزن!";
-  
-  const shuffled = [...gifts].sort(() => Math.random() - 0.5);
+ const board=document.getElementById("board");
+ board.innerHTML="";
 
-  shuffled.forEach((gift,index)=>{
-    const card = document.createElement("button");
-    card.className = "card";
-    card.innerHTML = `<span class="number">${index+1}</span>`;
+ const shuffled=[...gifts].sort(()=>Math.random()-0.5);
 
-    card.onclick = ()=>{
-      if(card.disabled) return;
-      card.disabled = true;
-      card.innerHTML = "";
+ shuffled.forEach((gift,index)=>{
+  const card=document.createElement("button");
+  card.className="card";
+  card.innerHTML='<span class="number">'+(index+1)+'</span>';
 
-      const img = document.createElement("img");
-      img.className = "gift-img";
-      img.src = imageBase + gift.image;
-      img.alt = gift.name;
+  card.onclick=()=>{
+   if(card.disabled)return;
+   card.disabled=true;
+   card.innerHTML="";
 
-      img.onerror = ()=>{
-        img.onerror = null;
-        img.src = "https://beetgames.com/images/gifts/rose.webp";
-      };
+   const image=findImage(gift.name);
 
-      const name = document.createElement("span");
-      name.className = "gift-name";
-      name.textContent = gift.name;
+   if(image){
+    const img=document.createElement("img");
+    img.className="gift-img";
+    img.src=image;
+    img.alt=gift.name;
+    img.onerror=()=>img.remove();
+    card.appendChild(img);
+   }
 
-      const price = document.createElement("span");
-      price.className = "price";
-      price.textContent = gift.price.toLocaleString("en-US") + " سکه";
+   const name=document.createElement("span");
+   name.className="gift-name";
+   name.textContent=gift.name;
 
-      card.append(img,name,price);
-      document.getElementById("message").textContent =
-        "گیفت پیدا شد: " + gift.name + " 🎉";
-    };
+   const price=document.createElement("span");
+   price.className="price";
+   price.textContent=
+     gift.price.toLocaleString("en-US")+" سکه";
 
-    board.appendChild(card);
-  });
+   card.append(name,price);
+
+   document.getElementById("message").textContent=
+     "گیفت پیدا شد: "+gift.name+" 🎉";
+  };
+
+  board.appendChild(card);
+ });
 }
 
 startGame();
+loadImages();
 </script>
 </body>
 </html>
