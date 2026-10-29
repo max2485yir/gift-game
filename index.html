@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بازی هدیه‌های تیک‌تاک</title>
+<style>
+body{font-family:Arial,sans-serif;background:#10131b;color:white;text-align:center;padding:15px}
+h1{color:#ff4d8d}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:500px;margin:auto}
+button{border:0;border-radius:12px;padding:20px 5px;background:#292f40;color:white;font-size:24px;font-weight:bold;min-height:85px}
+button:active{transform:scale(.97)}
+#result{margin:25px auto;font-size:24px;min-height:70px}
+</style>
+</head>
+<body>
+<h1>🎁 بازی هدیه‌های تیک‌تاک 🎁</h1>
+<p>یک شماره را انتخاب کن!</p>
+<div class="grid" id="grid"></div>
+<div id="result">✨ کدام شماره را انتخاب می‌کنی؟ ✨</div>
+<script>
+const gifts=["رز 🌹","قلب ❤️","دونات 🍩","کاپ‌کیک 🧁","گل 🎀","عینک 😎","قهوه ☕","شیر 🦁","گیتار 🎸","بالون 🎈","تاج 👑","موشک 🚀","خرگوش 🐰","آفتاب 🌞","الماس 💎","ماشین 🚗","فرفره 🎡","دست‌گل 💐","ستاره ⭐","هدیه 🎁"];
+gifts.sort(()=>Math.random()-0.5);
+const grid=document.getElementById("grid");
+gifts.forEach((gift,i)=>{
+ const b=document.createElement("button");
+ b.textContent=i+1;
+ b.onclick=()=>{
+  if(b.dataset.open)return;
+  b.dataset.open="1";
+  b.textContent="🎁";
+  b.style.background="#e83e8c";
+  document.getElementById("result").textContent="شماره "+(i+1)+" : "+gift;
+ };
+ grid.appendChild(b);
+});
+</script>
+</body>
+</html>
