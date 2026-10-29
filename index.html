@@ -3,86 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>بازی هدیه‌های تیک‌تاک 🎁</title>
+<title>🎁 بازی هدیه‌های تیک‌تاک</title>
 <style>
-body{margin:0;padding:20px;background:#101119;color:white;font-family:Arial,sans-serif;text-align:center}
+body{margin:0;padding:20px;background:#101114;color:white;font-family:Arial,sans-serif;text-align:center}
 h1{color:#ff4d91;font-size:27px}
-p{font-size:19px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:600px;margin:25px auto}
-button{border:0;border-radius:18px;min-height:105px;background:#292d3e;color:white;font-size:28px;font-weight:bold}
-button.open{background:#d8468c;font-size:16px;padding:5px}
-.gift{font-size:36px;display:block;margin-bottom:7px}
-.name{font-size:15px;font-weight:bold}
-.coins{font-size:14px;margin-top:5px}
-#result{font-size:22px;margin:20px}
+p{font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:600px;margin:20px auto}
+button{border:0;border-radius:14px;min-height:100px;padding:8px;background:#292b35;color:white;font-size:16px;cursor:pointer}
+button.open{background:#d8468c}
+.gift{font-size:34px;display:block;margin-bottom:8px}
+.name{font-size:14px;font-weight:bold}
+.coins{font-size:13px;margin-top:5px;color:#ffe082}
+#result{font-size:20px;margin:20px}
 .reset{background:#44495b;padding:14px 24px;min-height:auto;font-size:17px}
+@media(max-width:380px){.grid{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
 <h1>🎁 بازی هدیه‌های تیک‌تاک 🎁</h1>
-<p>یک شماره را انتخاب کن؛ هدیه‌اش آشکار می‌شود!</p>
-<div class="grid" id="grid"></div>
-<div id="result">هنوز شماره‌ای انتخاب نشده</div>
-<button class="reset" onclick="resetGame()">بازی جدید 🔄</button>
+<p>یک هدیه را انتخاب کن و قیمتش را کشف کن!</p>
+<div id="grid" class="grid"></div>
+<div id="result">روی یکی از هدیه‌ها بزن ❤️</div>
+<button class="reset" onclick="startGame()">🔄 شروع دوباره</button>
 
 <script>
 const gifts=[
-["🌹","گل رز",1],
-["🎁","هدیه",1],
-["❤️","قلب",1],
-["☕","قهوه",1],
-["🎵","نت موسیقی",1],
-["🥹","دست‌های دعا",5],
-["🌷","لاله",10],
-["🐱","پنجه گربه",5],
-["🍩","دونات",30],
-["🎤","میکروفون",100],
-["💖","قلب تپنده",100],
-["🦋","پروانه",99],
-["💐","دسته گل",199],
-["🕶️","عینک",199],
-["🎂","کیک تولد",cakeCoins()],
-["🏍️","موتور",298],
-["💎","الماس",500],
-["🦁","شیر",29999],
-["🌌","کهکشان",GalaxyCoins()],
-["🐉","اژدها",DragonCoins()]
+{name:"گل رز",coins:1,emoji:"🌹"},
+{name:"قلب انگشتی",coins:5,emoji:"🫰"},
+{name:"عطر",coins:20,emoji:"💐"},
+{name:"عینک",coins:199,emoji:"🕶️"},
+{name:"تفنگ پول",coins:500,emoji:"💸"},
+{name:"کهکشان",coins:1000,emoji:"🌌"},
+{name:"آتش‌بازی",coins:1088,emoji:"🎆"},
+{name:"نهنگ",coins:2150,emoji:"🐳"},
+{name:"جت خصوصی",coins:4888,emoji:"✈️"},
+{name:"شیر",coins:29999,emoji:"🦁"},
+{name:"تیک‌تاک یونیورس",coins:44999,emoji:"🌍"},
+{name:"کاپ‌کیک",coins:1,emoji:"🧁"},
+{name:"قلب",coins:10,emoji:"❤️"},
+{name:"بالون",coins:10,emoji:"🎈"},
+{name:"گل",coins:100,emoji:"💐"},
+{name:"تاج",coins:199,emoji:"👑"},
+{name:"ستاره",coins:99,emoji:"⭐"},
+{name:"الماس",coins:100,emoji:"💎"},
+{name:"خرگوش",coins:100,emoji:"🐰"},
+{name:"ماشین",coins:1200,emoji:"🏎️"}
 ];
 
-function cakeCoins(){return 50}
-function GalaxyCoins(){return 1000}
-function DragonCoins(){return 20000}
-
-let order=[];
-function shuffle(){
- order=Array.from({length:20},(_,i)=>i);
- for(let i=19;i>0;i--){
-  const j=Math.floor(Math.random()*(i+1));
-  [order[i],order[j]]=[order[j],order[i]];
- }
+function startGame(){
+const shuffled=[...gifts].sort(()=>Math.random()-0.5);
+const grid=document.getElementById("grid");
+grid.innerHTML="";
+document.getElementById("result").textContent="روی یکی از هدیه‌ها بزن ❤️";
+shuffled.forEach(gift=>{
+const btn=document.createElement("button");
+btn.innerHTML='<span class="gift">🎁</span><span>؟</span>';
+btn.onclick=()=>{
+if(btn.classList.contains("open"))return;
+btn.classList.add("open");
+btn.innerHTML='<span class="gift">'+gift.emoji+'</span><span class="name">'+gift.name+'</span><div class="coins">'+gift.coins.toLocaleString("en-US")+' 🪙</div>';
+document.getElementById("result").textContent="🎉 "+gift.name+" — "+gift.coins.toLocaleString("en-US")+" کوین";
+};
+grid.appendChild(btn);
+});
 }
-function render(){
- const grid=document.getElementById("grid");
- grid.innerHTML="";
- order.forEach((giftIndex,i)=>{
-  const b=document.createElement("button");
-  b.textContent=i+1;
-  b.onclick=()=>{
-   if(b.classList.contains("open"))return;
-   const g=gifts[giftIndex];
-   b.classList.add("open");
-   b.innerHTML='<span class="gift">'+g[0]+'</span><span class="name">'+g[1]+'</span><div class="coins">'+g[2].toLocaleString("en-US")+' کوین</div>';
-   document.getElementById("result").textContent="🎁 "+g[1]+" — "+g[2].toLocaleString("en-US")+" کوین";
-  };
-  grid.appendChild(b);
- });
-}
-function resetGame(){
- shuffle();
- document.getElementById("result").textContent="بازی جدید شروع شد!";
- render();
-}
-shuffle();render();
+startGame();
 </script>
 </body>
 </html>
