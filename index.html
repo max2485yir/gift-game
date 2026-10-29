@@ -3,104 +3,153 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🎁 بازی گیفت تیک‌تاک</title>
+<title>بازی حدس گیفت تیک‌تاک</title>
 <style>
-body{margin:0;padding:16px;background:#101114;color:white;font-family:Arial,sans-serif;text-align:center}
-h1{color:#ff4d91;font-size:25px}
-p{font-size:17px}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;max-width:600px;margin:20px auto}
-button{border:0;border-radius:13px;min-height:95px;padding:6px;background:#292b35;color:white;font-size:15px;cursor:pointer}
-button.open{background:#70264e}
-.gift{width:58px;height:58px;object-fit:contain;display:block;margin:0 auto 5px}
-.name{font-size:13px;font-weight:bold}
-.coins{font-size:12px;margin-top:5px;color:#ffe082}
-.reset{background:#44495b;padding:14px 24px;min-height:auto;font-size:17px}
-#result{font-size:18px;margin:20px 0}
-@media(max-width:360px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  text-align:center;
+  background:linear-gradient(135deg,#17152e,#33204c);
+  color:white;
+  padding:20px 12px;
+}
+h1{font-size:25px;color:#ffdf55}
+p{color:#eee}
+#board{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  max-width:520px;
+  margin:22px auto;
+}
+.card{
+  min-height:120px;
+  border:2px solid #ffdf55;
+  border-radius:14px;
+  background:#49356c;
+  color:white;
+  padding:8px 3px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  overflow:hidden;
+}
+.card:disabled{cursor:default}
+.number{font-size:28px;font-weight:bold}
+.gift-img{
+  width:62px;
+  height:62px;
+  object-fit:contain;
+}
+.gift-name{font-size:13px;font-weight:bold}
+.price{font-size:12px;color:#ffe56d}
+button#restart{
+  background:#ffdf55;
+  color:#241638;
+  border:0;
+  padding:13px 25px;
+  border-radius:12px;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+#message{min-height:28px;color:#ffe56d}
+@media(max-width:360px){
+  #board{gap:6px}
+  .card{min-height:105px}
+  .gift-img{width:48px;height:48px}
+}
 </style>
 </head>
 <body>
-<h1>🎁 بازی گیفت‌های تیک‌تاک 🎁</h1>
-<p>از بین ۲۰ شماره، گیفت مخفی را پیدا کن!</p>
-<div id="grid" class="grid"></div>
-<div id="result">یک شماره انتخاب کن ❤️</div>
-<button class="reset" onclick="startGame()">🔄 شروع دوباره</button>
+
+<h1>🎁 بازی حدس گیفت تیک‌تاک 🎁</h1>
+<p>یک شماره انتخاب کن و ببین چه گیفتی پشت آن پنهان شده!</p>
+<p>۲۰ شماره، ۲۰ گیفت معروف</p>
+
+<div id="board"></div>
+<div id="message">روی یکی از شماره‌ها بزن!</div>
+<button id="restart" onclick="startGame()">🔄 شروع دوباره</button>
 
 <script>
-const gifts=[
-["گل رز",1,"rose","🌹"],
-["قلب انگشتی",5,"finger_heart","🫰"],
-["عطر",20,"perfume","💐"],
-["عینک آفتابی",199,"sunglasses","🕶️"],
-["تفنگ پول",500,"money_gun","💸"],
-["کهکشان",1000,"galaxy","🌌"],
-["آتش‌بازی",1088,"fireworks","🎆"],
-["نهنگ",2150,"whale_diving","🐳"],
-["جت خصوصی",4888,"private_jet","✈️"],
-["شیر",29999,"lion","🦁"],
-["یونیورس تیک‌تاک",44999,"tiktok_universe","🌍"],
-["قلب",10,"heart","❤️"],
-["ستاره",99,"star","⭐"],
-["تاج",199,"crown","👑"],
-["الماس",100,"diamond","💎"],
-["بادکنک",10,"balloon","🎈"],
-["کاپ‌کیک",1,"cupcake","🧁"],
-["خرگوش",100,"bunny","🐰"],
-["ماشین مسابقه",1200,"racing_car","🏎️"],
-["کیک",50,"cake","🎂"],
-["گل",100,"flowers","💐"],
-["گیتار",500,"guitar","🎸"],
-["میکروفون",500,"mic","🎤"],
-["ببر",39999,"tiger","🐯"],
-["قلعه",20000,"castle","🏰"],
-["پاندای بامزه",1000,"panda","🐼"],
-["قلب بنفش",100,"purple_heart","💜"],
-["ستاره دریایی",100,"starfish","⭐"],
-["قایق",500,"boat","🚤"],
-["فیل",500,"elephant","🐘"]
+const gifts = [
+  {name:"Rose",price:1,image:"rose.webp"},
+  {name:"Finger Heart",price:5,image:"finger_heart.webp"},
+  {name:"Ice Cream",price:10,image:"ice_cream.webp"},
+  {name:"Perfume",price:20,image:"perfume.webp"},
+  {name:"Love You",price:49,image:"love_you.webp"},
+  {name:"Teddy Bear",price:100,image:"teddy_bear.webp"},
+  {name:"Mic",price:100,image:"mic.webp"},
+  {name:"Hand Hearts",price:100,image:"hand_hearts.webp"},
+  {name:"Sunglasses",price:199,image:"sunglasses.webp"},
+  {name:"Bouquet",price:199,image:"bouquet.webp"},
+  {name:"Galaxy",price:1000,image:"galaxy.webp"},
+  {name:"Fireworks",price:1088,image:"fireworks.webp"},
+  {name:"Whale",price:2150,image:"whale.webp"},
+  {name:"Private Jet",price:4888,image:"private_jet.webp"},
+  {name:"Sports Car",price:7000,image:"sports_car.webp"},
+  {name:"Castle",price:20000,image:"castle.webp"},
+  {name:"Lion",price:29999,image:"lion.webp"},
+  {name:"Dragon",price:planPrice("dragon"),image:"dragon.webp"},
+  {name:"Tiger",price:39999,image:"tiger.webp"},
+  {name:"TikTok Universe",price:44999,image:"tiktok_universe.webp"}
 ];
 
-// اصلاح قیمت قایق
-gifts[28][1]=500;
+function planPrice(name){
+  return 39999;
+}
+
+const imageBase = "https://beetgames.com/images/gifts/";
 
 function startGame(){
- const chosen=[...gifts].sort(()=>Math.random()-0.5).slice(0,20);
- const shuffled=chosen.sort(()=>Math.random()-0.5);
- const grid=document.getElementById("grid");
- grid.innerHTML="";
- document.getElementById("result").textContent="یک شماره انتخاب کن ❤️";
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  document.getElementById("message").textContent =
+    "روی یکی از شماره‌ها بزن!";
+  
+  const shuffled = [...gifts].sort(() => Math.random() - 0.5);
 
- shuffled.forEach((g,i)=>{
-  const btn=document.createElement("button");
-  btn.innerHTML='<span style="font-size:30px">🎁</span><br><b>'+(i+1)+'</b>';
-  btn.onclick=()=>{
-   if(btn.classList.contains("open"))return;
-   btn.classList.add("open");
-   btn.innerHTML="";
+  shuffled.forEach((gift,index)=>{
+    const card = document.createElement("button");
+    card.className = "card";
+    card.innerHTML = `<span class="number">${index+1}</span>`;
 
-   const img=document.createElement("img");
-   img.className="gift";
-   img.alt=g[0];
-   img.src="https://beetgames.com/images/gifts/"+g[2]+".webp";
-   img.onerror=()=>{img.replaceWith(Object.assign(document.createElement("span"),{className:"gift",textContent:g[3]}));};
-   btn.appendChild(img);
+    card.onclick = ()=>{
+      if(card.disabled) return;
+      card.disabled = true;
+      card.innerHTML = "";
 
-   const name=document.createElement("div");
-   name.className="name";
-   name.textContent=g[0];
-   btn.appendChild(name);
+      const img = document.createElement("img");
+      img.className = "gift-img";
+      img.src = imageBase + gift.image;
+      img.alt = gift.name;
 
-   const coins=document.createElement("div");
-   coins.className="coins";
-   coins.textContent=g[1].toLocaleString("en-US")+" 🪙";
-   btn.appendChild(coins);
+      img.onerror = ()=>{
+        img.onerror = null;
+        img.src = "https://beetgames.com/images/gifts/rose.webp";
+      };
 
-   document.getElementById("result").textContent=
-    "🎉 شماره "+(i+1)+" : "+g[0]+" — "+g[1].toLocaleString("en-US")+" کوین";
-  };
-  grid.appendChild(btn);
- });
+      const name = document.createElement("span");
+      name.className = "gift-name";
+      name.textContent = gift.name;
+
+      const price = document.createElement("span");
+      price.className = "price";
+      price.textContent = gift.price.toLocaleString("en-US") + " سکه";
+
+      card.append(img,name,price);
+      document.getElementById("message").textContent =
+        "گیفت پیدا شد: " + gift.name + " 🎉";
+    };
+
+    board.appendChild(card);
+  });
 }
+
 startGame();
 </script>
 </body>
